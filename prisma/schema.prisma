@@ -1,0 +1,49 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model AllowList {
+  id        Int      @id @default(autoincrement())
+  active    Boolean  @default(true)
+  domain    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId    Int?
+  User      User?    @relation(fields: [userId], references: [id])
+}
+
+model DenyList {
+  id        Int      @id @default(autoincrement())
+  active    Boolean  @default(true)
+  domain    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId    Int?
+  User      User?    @relation(fields: [userId], references: [id])
+}
+
+model ParentalControl {
+  id                    Int     @id @default(autoincrement())
+  youtubeRestrictedMode Boolean @default(false)
+  safeSearch            Boolean @default(false)
+  userId                Int     @unique
+  User                  User    @relation(fields: [userId], references: [id])
+}
+
+model User {
+  id              Int              @id @default(autoincrement())
+  email           String           @unique
+  name            String
+  password        String
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  AllowList       AllowList[]
+  DenyList        DenyList[]
+  ParentalControl ParentalControl?
+}
