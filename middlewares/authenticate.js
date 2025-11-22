@@ -4,13 +4,13 @@ async function authenticate(req, res, next) {
 	try {
 		const token = req.headers.authorization?.split(" ")[1];
 		if (!token) {
-			return res.status(401).json({ message: "Unauthorized" });
+			return res.status(401).json({ message: "Token is missing" });
 		}
 
 		const decoded = await verifyToken(token);
 
 		if (!decoded) {
-			return res.status(401).json({ message: "Unauthorized" });
+			return res.status(401).json({ message: "Token is invalid" });
 		}
 
 		const user = await prisma.user.findUnique({
@@ -18,7 +18,7 @@ async function authenticate(req, res, next) {
 		});
 
 		if (!user) {
-			return res.status(401).json({ message: "Unauthorized" });
+			return res.status(401).json({ message: "User not found" });
 		}
 
 		req.user = user;
@@ -33,13 +33,13 @@ async function authenticateAdmin(req, res, next) {
 	try {
 		const token = req.headers.authorization?.split(" ")[1];
 		if (!token) {
-			return res.status(401).json({ message: "Unauthorized" });
+			return res.status(401).json({ message: "Token is missing" });
 		}
-		
+
 		const decoded = await verifyToken(token);
 
 		if (!decoded) {
-			return res.status(401).json({ message: "Unauthorized" });
+			return res.status(401).json({ message: "Token is invalid" });
 		}
 
 		const user = await prisma.user.findUnique({
@@ -47,7 +47,9 @@ async function authenticateAdmin(req, res, next) {
 		});
 
 		if (!user || !user.role || user.role !== "ADMIN") {
-			return res.status(401).json({ message: "Unauthorized" });
+			return res
+				.status(401)
+				.json({ message: "User not found or not an admin" });
 		}
 		req.user = user;
 		next();
