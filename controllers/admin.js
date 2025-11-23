@@ -3,6 +3,16 @@ async function handleGetUserConfigs(req, res) {
 	try {
 		const { userId } = req.params;
 
+		// check if user exists
+		const user = await prisma.user.findUnique({
+			where: {
+				id: Number(userId),
+			},
+		});
+		if (!user) {
+			return res.status(404).json({ message: "User not found." });
+		}
+
 		const allowList = prisma.allowList.findMany({
 			where: {
 				userId: Number(userId),
