@@ -1,3 +1,4 @@
+const { publish } = require("../helpers/publish");
 const prisma = require("../utils/prismaClient");
 
 async function handleDenyListAdd(req, res) {
@@ -26,6 +27,11 @@ async function handleDenyListAdd(req, res) {
 				userId: user.id,
 			},
 		});
+
+		await publish(
+			"user_config_updates",
+			JSON.stringify({ userId: user.id })
+		);
 
 		res.status(201).json({
 			message: "Domain added to deny list successfully.",
