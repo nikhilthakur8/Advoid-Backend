@@ -1,47 +1,43 @@
 const prisma = require("../utils/prismaClient");
+
 async function handleGetUserConfigs(req, res) {
 	try {
 		const { userId } = req.params;
+
+		if (!userId || isNaN(Number(userId))) {
+			return res.status(400).json({ message: "Invalid user ID." });
+		}
 
 		// check if user exists
 		const user = await prisma.user.findUnique({
 			where: {
 				id: Number(userId),
 			},
+			select: {
+				AllowList: {
+					select: {
+						domain: true,
+						active: true,
+					},
+				},
+				DenyList: {
+					select: {
+						domain: true,
+						active: true,
+					},
+				},
+			},
 		});
+
 		if (!user) {
 			return res.status(404).json({ message: "User not found." });
 		}
 
-		const allowList = prisma.allowList.findMany({
-			where: {
-				userId: Number(userId),
-			},
-			select: {
-				domain: true,
-				active: true,
-			},
-		});
-
-		const denyList = prisma.denyList.findMany({
-			where: {
-				userId: Number(userId),
-			},
-			select: {
-				domain: true,
-				active: true,
-			},
-		});
-
-		const [resolvedAllowList, resolvedDenyList] = await Promise.all([
-			allowList,
-			denyList,
-		]);
 
 		return res.status(200).json({
 			data: {
-				denyList: resolvedDenyList,
-				allowList: resolvedAllowList,
+				allowList: user.AllowList,
+				denyList: user.DenyList,
 			},
 		});
 	} catch (error) {

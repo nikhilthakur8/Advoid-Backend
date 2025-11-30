@@ -36,6 +36,23 @@ model ParentalControl {
   User                  User    @relation(fields: [userId], references: [id])
 }
 
+// model Apps {
+//   id         Int               @id @default(autoincrement())
+//   name       String
+//   websiteUrl String
+//   createdAt  DateTime          @default(now())
+//   updatedAt  DateTime          @updatedAt
+//   parents    ParentalControl[] @relation("BlockedAppsRelation")
+// }
+
+// model Category {
+//   id        Int               @id @default(autoincrement())
+//   name      String            @unique
+//   createdAt DateTime          @default(now())
+//   updatedAt DateTime          @updatedAt
+//   parents   ParentalControl[] @relation("BlockedCategoriesRelation")
+// }
+
 enum Role {
   ADMIN
   USER
