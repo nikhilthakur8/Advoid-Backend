@@ -10,5 +10,6 @@ const {
 
 userRouter.post("/deny-list", handleDenyListAdd);
 userRouter.patch("/deny-list/:denyListId", handleDenyListUpdate);
+userRouter.delete("/deny-list/:denyListId", handleDenyListDelete);
 
 module.exports = userRouter;

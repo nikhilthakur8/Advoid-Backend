@@ -76,7 +76,33 @@ async function handleDenyListUpdate(req, res) {
 
 async function handleDenyListDelete(req, res) {
 	try {
-	} catch (error) {}
+		const user = req.user;
+		const { denyListId } = req.params;
+
+		const deletedEntry = await prisma.denyList.deleteMany({
+			where: {
+				id: parseInt(denyListId),
+				userId: user.id,
+			},
+		});
+		if (deletedEntry.count === 0) {
+			return res
+				.status(404)
+				.json({ message: "Deny list entry not found." });
+		}
+
+		await publish(
+			"user_config_updates",
+			JSON.stringify({ userId: user.id })
+		);
+
+		return res.status(200).json({
+			message: "Domain deleted from deny list successfully.",
+		});
+	} catch (error) {
+		console.error("Error deleting domain from deny list:", error);
+		res.status(500).json({ message: "Internal server error." });
+	}
 }
 
 async function handleAllowListAdd(req, res) {
