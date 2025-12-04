@@ -20,7 +20,7 @@ async function handleDenyListAdd(req, res) {
 				.json({ message: "Domain already exists in deny list." });
 		}
 
-		await prisma.denyList.create({
+		const data = await prisma.denyList.create({
 			data: {
 				domain,
 				active: true,
@@ -35,6 +35,7 @@ async function handleDenyListAdd(req, res) {
 
 		res.status(201).json({
 			message: "Domain added to deny list successfully.",
+			data: data,
 		});
 	} catch (error) {
 		console.error("Error adding domain to deny list:", error);
@@ -65,11 +66,35 @@ async function handleDenyListUpdate(req, res) {
 				.json({ message: "Deny list entry not found." });
 		}
 
-		res.status(200).json({
+		await publish(
+			"user_config_updates",
+			JSON.stringify({ userId: user.id })
+		);
+
+		return res.status(200).json({
 			message: "Domain updated in deny list successfully.",
 		});
 	} catch (error) {
 		console.error("Error updating domain in deny list:", error);
+		res.status(500).json({ message: "Internal server error." });
+	}
+}
+
+async function handleGetDenyList(req, res) {
+	try {
+		const user = req.user;
+
+		const denyList = await prisma.denyList.findMany({
+			where: {
+				userId: user.id,
+			},
+			orderBy: {
+				createdAt: "desc",
+			},
+		});
+		return res.status(200).json({ denyList });
+	} catch (error) {
+		console.error("Error fetching deny list:", error);
 		res.status(500).json({ message: "Internal server error." });
 	}
 }
@@ -118,6 +143,7 @@ async function handleAllowListDelete(req, res) {
 module.exports = {
 	handleDenyListAdd,
 	handleDenyListDelete,
+	handleGetDenyList,
 	handleDenyListUpdate,
 	handleAllowListAdd,
 	handleAllowListDelete,
