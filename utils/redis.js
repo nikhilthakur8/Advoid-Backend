@@ -2,6 +2,9 @@ const { createClient } = require("redis");
 
 const client = createClient({
 	url: process.env.REDIS_URL,
+	socket: {
+		reconnectStrategy: (retries) => Math.min(retries * 50, 500),
+	},
 });
 
 async function connectRedis() {
