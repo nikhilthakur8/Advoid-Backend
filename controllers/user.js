@@ -1,6 +1,15 @@
 const { publish } = require("../helpers/publish");
 const prisma = require("../utils/prismaClient");
 
+async function handleGetProfile(req, res) {
+	try {
+		const { password, createdAt, updatedAt, ...userData } = req.user;
+		return res.status(200).json({ user: userData });
+	} catch (error) {
+		return res.status(500).json({ message: "Internal server error." });
+	}
+}
+
 async function handleDenyListAdd(req, res) {
 	try {
 		const user = req.user;
@@ -147,4 +156,5 @@ module.exports = {
 	handleDenyListUpdate,
 	handleAllowListAdd,
 	handleAllowListDelete,
+	handleGetProfile,
 };
