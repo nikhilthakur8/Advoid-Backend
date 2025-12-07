@@ -141,12 +141,131 @@ async function handleDenyListDelete(req, res) {
 
 async function handleAllowListAdd(req, res) {
 	try {
-	} catch (error) {}
+		const user = req.user;
+		const { domain } = req.body;
+
+		// check if the domain already exists for the user
+		const existingEntry = await prisma.allowList.findFirst({
+			where: {
+				domain,
+				userId: user.id,
+			},
+		});
+
+		if (existingEntry) {
+			return res
+				.status(400)
+				.json({ message: "Domain already exists in allow list." });
+		}
+
+		const data = await prisma.allowList.create({
+			data: {
+				domain,
+				active: true,
+				userId: user.id,
+			},
+		});
+
+		await publish(
+			"user_config_updates",
+			JSON.stringify({ userId: user.id })
+		);
+
+		res.status(201).json({
+			message: "Domain added to allow list successfully.",
+			data: data,
+		});
+	} catch (error) {
+		console.error("Error adding domain to allow list:", error);
+		res.status(500).json({ message: "Internal server error." });
+	}
+}
+
+async function handleAllowListUpdate(req, res) {
+	try {
+		const user = req.user;
+		const { allowListId } = req.params;
+		const { active } = req.body;
+
+		// update the active status of the deny list entry
+		const updatedEntry = await prisma.allowList.update({
+			where: {
+				id: parseInt(allowListId),
+				userId: user.id,
+			},
+			data: {
+				active,
+			},
+		});
+
+		if (!updatedEntry) {
+			return res
+				.status(404)
+				.json({ message: "Allow list entry not found." });
+		}
+
+		await publish(
+			"user_config_updates",
+			JSON.stringify({ userId: user.id })
+		);
+
+		return res.status(200).json({
+			message: "Domain updated in allow list successfully.",
+		});
+	} catch (error) {
+		console.error("Error updating domain in allow list:", error);
+		res.status(500).json({ message: "Internal server error." });
+	}
+}
+
+async function handleGetAllowList(req, res) {
+	try {
+		const user = req.user;
+
+		const allowList = await prisma.allowList.findMany({
+			where: {
+				userId: user.id,
+			},
+			orderBy: {
+				createdAt: "desc",
+			},
+		});
+		return res.status(200).json({ allowList });
+	} catch (error) {
+		console.error("Error fetching allow list:", error);
+		res.status(500).json({ message: "Internal server error." });
+	}
 }
 
 async function handleAllowListDelete(req, res) {
 	try {
-	} catch (error) {}
+		const user = req.user;
+		const { allowListId } = req.params;
+
+		const deletedEntry = await prisma.allowList.deleteMany({
+			where: {
+				id: parseInt(allowListId),
+				userId: user.id,
+			},
+		});
+		if (deletedEntry.count === 0) {
+			return res
+				.status(404)
+				.json({ message: "Allow list entry not found." });
+		}
+
+		await publish(
+			"user_config_updates",
+			JSON.stringify({ userId: user.id })
+		);
+
+		return res.status(200).json({
+			message: "Domain deleted from allow list successfully.",
+		});
+	} catch (error) {
+		console.error("Error deleting domain from allow list:", error);
+		res.status(500).json({ message: "Internal server error." });
+	}
 }
 
 module.exports = {
@@ -157,4 +276,6 @@ module.exports = {
 	handleAllowListAdd,
 	handleAllowListDelete,
 	handleGetProfile,
+	handleAllowListUpdate,
+	handleGetAllowList,
 };

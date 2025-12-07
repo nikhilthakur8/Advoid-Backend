@@ -13,7 +13,6 @@ async function connectRedis() {
 		console.log("Connected to Redis");
 	} catch (error) {
 		console.log("Redis connection error:", error);
-		process.exit(1);
 	}
 }
 

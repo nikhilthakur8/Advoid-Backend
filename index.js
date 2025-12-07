@@ -24,7 +24,11 @@ app.use("/auth", require("./routes/auth"));
 app.use("/user", authenticate, require("./routes/user"));
 app.use("/admin", authenticateAdmin, require("./routes/admin"));
 
-app.listen(PORT, () => {
-	connectRedis();
+app.listen(PORT, async () => {
+	try {
+		await connectRedis();
+	} catch (error) {
+		console.error("Failed to connect to Redis:", error);
+	}
 	console.log(`Server is running on port ${PORT}`);
 });
