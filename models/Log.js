@@ -7,7 +7,7 @@ const logSchema = new mongoose.Schema(
 			expires: "30d",
 		},
 		userId: {
-			type: String,
+			type: Number,
 			index: true,
 		},
 		domain: {

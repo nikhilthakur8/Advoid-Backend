@@ -36,7 +36,7 @@ async function handleGetUserConfigs(req, res) {
 
 		return res.status(200).json({
 			data: {
-				userId: String(user.id),
+				userId: user.id,
 				allowList: user.AllowList,
 				denyList: user.DenyList,
 			},
