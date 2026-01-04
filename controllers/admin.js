@@ -26,6 +26,7 @@ async function handleGetUserConfigs(req, res) {
 						active: true,
 					},
 				},
+				id: true,
 			},
 		});
 
@@ -35,6 +36,7 @@ async function handleGetUserConfigs(req, res) {
 
 		return res.status(200).json({
 			data: {
+				userId: String(user.id),
 				allowList: user.AllowList,
 				denyList: user.DenyList,
 			},
