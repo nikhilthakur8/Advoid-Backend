@@ -3,6 +3,7 @@ const jsonwebtoken = require("jsonwebtoken");
 function generateToken(payload, options = {}) {
 	return jsonwebtoken.sign(payload, process.env.JWT_SECRET, {
 		...options,
+		expiresIn: "7d",
 	});
 }
 

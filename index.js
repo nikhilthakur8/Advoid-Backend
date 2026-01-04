@@ -7,6 +7,7 @@ const {
 	authenticate,
 } = require("./middlewares/authenticate");
 const { connectRedis } = require("./utils/redis");
+const { connectToMongoDB } = require("./utils/mongodb");
 
 const PORT = process.env.PORT || 3000;
 const app = express();
@@ -27,8 +28,9 @@ app.use("/admin", authenticateAdmin, require("./routes/admin"));
 app.listen(PORT, async () => {
 	try {
 		await connectRedis();
+		await connectToMongoDB();
 	} catch (error) {
-		console.error("Failed to connect to Redis:", error);
+		console.error("Failed to connect to", error);
 	}
 	console.log(`Server is running on port ${PORT}`);
 });
