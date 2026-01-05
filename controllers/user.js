@@ -6,6 +6,7 @@ async function handleGetProfile(req, res) {
 		const { password, createdAt, updatedAt, ...userData } = req.user;
 		return res.status(200).json({ user: userData });
 	} catch (error) {
+		console.log("Error fetching user profile:", error);
 		return res.status(500).json({ message: "Internal server error." });
 	}
 }
