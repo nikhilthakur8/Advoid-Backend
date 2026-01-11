@@ -1,5 +1,6 @@
 const { publish } = require("../helpers/publish");
 const prisma = require("../utils/prismaClient");
+const Log = require("../models/Log");
 
 async function handleGetProfile(req, res) {
 	try {
@@ -269,6 +270,60 @@ async function handleAllowListDelete(req, res) {
 	}
 }
 
+async function handleWatchLogsEvent(req, res) {
+	try {
+		const userId = req.user.id;
+		res.setHeader("Content-Type", "text/event-stream");
+		res.setHeader("Cache-Control", "no-cache");
+		res.setHeader("Connection", "keep-alive");
+		res.flushHeaders();
+
+		const sendEvent = (data) => {
+			res.write(`data: ${JSON.stringify(data)}\n\n`);
+		};
+
+		const logWatch = Log.watch([
+			{
+				$match: {
+					operationType: "insert",
+					"fullDocument.userId": userId,
+				},
+			},
+		]);
+
+		let closed = false;
+
+		const cleanup = async () => {
+			if (closed) return;
+			closed = true;
+
+			try {
+				await logWatch.close();
+			} catch {}
+
+			if (!res.writableEnded) {
+				res.end();
+			}
+		};
+
+		logWatch.on("change", (change) => {
+			if (!res.writableEnded) {
+				sendEvent({ log: change.fullDocument });
+			}
+		});
+
+		logWatch.on("error", async (err) => {
+			console.error("Watch error:", err);
+			await cleanup();
+		});
+
+		req.on("close", cleanup);
+	} catch (error) {
+		console.log("Error in logs event stream:", error);
+		return res.status(500).json({ message: "Internal server error." });
+	}
+}
+
 module.exports = {
 	handleDenyListAdd,
 	handleDenyListDelete,
@@ -279,4 +334,5 @@ module.exports = {
 	handleGetProfile,
 	handleAllowListUpdate,
 	handleGetAllowList,
+	handleWatchLogsEvent,
 };

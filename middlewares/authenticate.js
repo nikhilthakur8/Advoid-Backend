@@ -2,7 +2,7 @@ const { verifyToken } = require("../utils/jwt");
 const prisma = require("../utils/prismaClient");
 async function authenticate(req, res, next) {
 	try {
-		const token = req.headers.authorization?.split(" ")[1];
+		const token = req.headers.authorization?.split(" ")[1] || req.query.token;
 		if (!token) {
 			return res.status(401).json({ message: "Token is missing" });
 		}
@@ -31,7 +31,7 @@ async function authenticate(req, res, next) {
 
 async function authenticateAdmin(req, res, next) {
 	try {
-		const token = req.headers.authorization?.split(" ")[1];
+		const token = req.headers.authorization?.split(" ")[1] || req.query.token;
 		if (!token) {
 			return res.status(401).json({ message: "Token is missing" });
 		}

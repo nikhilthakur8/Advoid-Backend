@@ -10,6 +10,7 @@ const {
 	handleGetProfile,
 	handleAllowListUpdate,
 	handleGetAllowList,
+	handleWatchLogsEvent,
 } = require("../controllers/user");
 
 userRouter.post("/deny-list", handleDenyListAdd);
@@ -23,5 +24,7 @@ userRouter.delete("/allow-list/:allowListId", handleAllowListDelete);
 userRouter.get("/allow-list", handleGetAllowList);
 
 userRouter.get("/profile", handleGetProfile);
+
+userRouter.get("/watch-logs", handleWatchLogsEvent);
 
 module.exports = userRouter;
